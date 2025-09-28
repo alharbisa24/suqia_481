@@ -1,7 +1,7 @@
 'use client';
 import { Mail, Phone, MapPin, Menu } from "lucide-react";
 import Link from "next/link";
-import { Home, ShoppingCart, List, LogOut, Building } from "lucide-react";
+import { Home, ShoppingCart, List, LogOut } from "lucide-react";
 import { useState, useEffect } from 'react';
 import axios from "axios";
 import { useRouter } from 'next/navigation';
@@ -62,9 +62,7 @@ export default function DashboardOrdersPage() {
           <Link href="/dashboard/orders" className="flex items-center space-x-3 p-3 rounded-lg bg-gray-200 transition text-black">
             <List className="w-5 h-5 text-gray-700  m-2" /> <span>الطلبات المكتملة</span>
           </Link>
-          <Link href="/dashboard/companies" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-200 transition text-black">
-            <Building className="w-5 h-5 text-gray-700  m-2" /> <span>الشركات</span>
-          </Link>
+          
           <button
             onClick={() => {
               localStorage.removeItem('token');
