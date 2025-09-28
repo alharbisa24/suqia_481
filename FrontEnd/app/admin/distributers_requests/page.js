@@ -7,7 +7,7 @@ import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import {
   Home, ShoppingCart, List, LogOut, Menu,
-  Users, Truck, GitPullRequestArrow, X
+  Users, Truck, GitPullRequestArrow, X,Building
 } from "lucide-react";
 
 export default function DistributersRequestsPage() {
@@ -81,7 +81,7 @@ export default function DistributersRequestsPage() {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed top-0 right-0 h-full w-72 bg-white shadow-xl z-50 transition-transform duration-300 ease-in-out ${
+      <div className={`fixed top-0 right-0 h-full w-72 bg-white shadow-xl z-50 transition-transform duration-300 ease-in-out overflow-y-auto ${
         isSidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'
       }`}>
         <div className="flex justify-between items-center p-6 border-b border-gray-100">
@@ -123,6 +123,9 @@ export default function DistributersRequestsPage() {
             </Link>
             <Link href="/admin/distributers_requests" className="flex items-center space-x-3 space-x-reverse p-3 rounded-lg bg-blue-50 text-blue-600 font-medium">
               <GitPullRequestArrow className="w-5 h-5" /> <span>طلبات السائقين</span>
+            </Link>
+            <Link href="/admin/companies" className="flex items-center space-x-3 space-x-reverse p-3 rounded-lg text-gray-700 hover:bg-gray-100">
+              <Building className="w-5 h-5" /> <span>الشركات</span>
             </Link>
           </div>
 

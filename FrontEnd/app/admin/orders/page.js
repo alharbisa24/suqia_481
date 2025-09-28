@@ -5,7 +5,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-import { Home, ShoppingCart, List, LogOut, Menu, Activity, Users, Truck, CreditCard, TrendingUp, BarChart2, X,GitPullRequestArrow } from "lucide-react";
+import { Home, ShoppingCart, List, LogOut, Menu, Activity, Users, Truck, CreditCard, TrendingUp, BarChart2, X,GitPullRequestArrow,Building } from "lucide-react";
 
 export default function DashboardOrdersPage() {
 
@@ -164,7 +164,7 @@ export default function DashboardOrdersPage() {
 
     {/* Sidebar */}
     <div
-      className={`fixed top-0 right-0 h-full w-72 bg-white shadow-xl flex flex-col transition-transform duration-300 ease-in-out z-50 ${
+      className={`fixed top-0 right-0 h-full w-72 bg-white shadow-xl z-50 transition-transform duration-300 ease-in-out overflow-y-auto ${
         isSidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'
       }`}
     >
@@ -210,6 +210,9 @@ export default function DashboardOrdersPage() {
           </Link>
           <Link href="/admin/distributers_requests" className="flex items-center space-x-3 space-x-reverse p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
               <GitPullRequestArrow className="w-5 h-5" /> <span>طلبات السائقين</span>
+            </Link>
+            <Link href="/admin/companies" className="flex items-center space-x-3 space-x-reverse p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
+              <Building className="w-5 h-5" /> <span>الشركات</span>
             </Link>
         </div>
         
