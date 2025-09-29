@@ -1,0 +1,22 @@
+# FrontEnd
+/FrontEnd/node_modules/
+/FrontEnd/.env
+/FrontEnd/.env.local
+/FrontEnd/.env.*.local
+/FrontEnd/.next/
+# يمكن إضافة ملفات بناء أو لوجات أخرى حسب الحاجة
+/FrontEnd/*.log
+/FrontEnd/dist/
+/FrontEnd/build/
+
+# backEnd
+/backEnd/node_modules/
+/backEnd/.env
+/backEnd/.env.local
+/backEnd/.env.*.local
+/backEnd/dist/
+/backEnd/*.log
+
+# ملفات النظام العامة
+.DS_Store
+Thumbs.db

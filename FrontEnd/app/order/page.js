@@ -1,19 +1,29 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { useUser } from "../context/UserContext";
 import { useRouter } from "next/navigation";
 import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
 import Navbar from "../navbar";
 
 export default function DonationPage() {
   const [step, setStep] = useState(1);
-  const [selectedSize, setSelectedSize] = useState('200 مل');
+  const [selectedSize, setSelectedSize] = useState();
   const [quantity, setQuantity] = useState(1);
+  const [maxQuantity, setMaxQuantity] = useState(20);
+
+  const [ProductsData, setProductsData] = useState([]); 
+  const [totalPrice, setTotalPrice] = useState(0);
+
   const [formData, setFormData] = useState({
     company: '',
+  });
+
+  const [locationForm, setlocationForm] = useState({
     mosque: '',
   });
+
+  const [availableSizes, setAvailableSizes] = useState([]);
+
   const [search, setSearch]= useState('');
   const [predictions, setPredictions] = useState([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -27,48 +37,94 @@ export default function DonationPage() {
     longitude: null,
   });
 
-  const { user, setUser } = useUser();
   const router = useRouter();
 
   useEffect(() => {
     if (!localStorage.getItem('user')) {
       router.push("/login");
     }
-  });
 
-  const waterCompanies = ['نوفا', 'بيرين', 'مياه الرياض', 'مياه القصيم'];
-  const cities = ['الرياض', 'جدة', 'مكة', 'المدينة المنورة'];
-  const sizes = ['200 مل', '330 مل', '600~550 مل'];
-  const max = 30;
-  const priceMap = {
-    '200 مل': 15,
-    '330 مل': 25,
-    '600~550 مل': 30
-  };
-  const maxQuantity = 30;
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(`${process.env.API_URL}/available_products`);
+        const data = response.data.map(c => ({ ...c, quantity: 0 }));
 
-  const totalPrice = quantity * (priceMap[selectedSize] || 0);
+        setProductsData(data); 
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
+  
+    fetchProducts();
+  
+  }, []);
+
+  const uniqueCompanies = [...new Set(ProductsData.map(product => product.company))];
 
   const handleInputChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
-  };
+    
+    if (name === 'company') {
 
-  // Modificación de handleNextStep para validar el campo mosque
+      const companySizes = ProductsData
+        .filter(product => product.company === value)
+        .map(product => product.size);
+      
+      
+      setAvailableSizes(companySizes);
+      setSelectedSize('');
+      setMaxQuantity(0);
+      setQuantity(1);
+      setTotalPrice(0);
+    }
+  };
+  useEffect(() => {
+    if (selectedSize && formData.company) {
+      const selectedProduct = ProductsData.find(
+        product => product.company === formData.company && product.size === selectedSize
+      );
+      
+      if (selectedProduct) {
+        setMaxQuantity(parseInt(selectedProduct.remaining_quantity));
+        setQuantity(1);
+        setTotalPrice(parseInt(selectedProduct.price));
+      }
+    }
+  }, [selectedSize, formData.company, ProductsData]);
+  
+  useEffect(() => {
+    if (selectedSize && formData.company) {
+      const selectedProduct = ProductsData.find(
+        product => product.company === formData.company && product.size === selectedSize
+      );
+      
+      if (selectedProduct) {
+        setTotalPrice(quantity * parseInt(selectedProduct.price));
+      }
+    }
+  }, [quantity, selectedSize, formData.company, ProductsData]);
+  
+  const handleSizeChange = (size) => {
+    setSelectedSize(size);
+  };
   const handleNextStep = (e) => {
     e.preventDefault();
     if (step === 1) {
+      if(!selectedSize){
+        alert('الرجاء اختيار الحجم');
+        return
+      }
       setStep(2);
     } else if (step === 2) {
-      // Validar que mosque no esté vacío
-      if (!formData.mosque || formData.mosque.trim() === '') {
+      if (!locationForm.mosque || locationForm.mosque.trim() === '') {
         alert('الرجاء إدخال اسم المسجد أو المكان');
         return;
       }
       
-      // Validar que se haya seleccionado una ubicación en el mapa
       if (!mapData.latitude || !mapData.longitude) {
         alert('الرجاء تحديد الموقع على الخريطة');
         return;
@@ -78,13 +134,13 @@ export default function DonationPage() {
     }
   };
 
+
   const handlePreviousStep = () => {
     setStep(step - 1);
   };
 
   const [loading, setLoading] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState(null);
-  const [mapCenter, setMapCenter] = useState({ lat: 24.7136, lng: 46.6753 }); // Initial center for Riyadh
+  const [mapCenter, setMapCenter] = useState({ lat: 24.7136, lng: 46.6753 }); 
   const [markerPosition, setMarkerPosition] = useState(null);
 
   const handlePayment = async () => {
@@ -98,6 +154,7 @@ export default function DonationPage() {
       const response = await axios.post(apiUrl, {
         ...mapData,
         ...formData,
+        ...locationForm,
         selectedSize,
         quantity,
         totalPrice:finalPrice,
@@ -108,11 +165,9 @@ export default function DonationPage() {
         const { redirect_url } = response.data;
         router.push(redirect_url);
       } else {
-        setPaymentStatus('Payment failed. Please try again.');
         console.error(response.data);
       }
     } catch (error) {
-      setPaymentStatus('Payment failed. Please try again.');
       console.error('Error:', error.response ? error.response.data : error.message);
     } finally {
       setLoading(false);
@@ -120,8 +175,8 @@ export default function DonationPage() {
   };
 
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: 'AIzaSyAEXquNYvaRdbXUyb0bdAOmbAOqu_sH0Qg',
-    libraries: ['places'], // Agregamos la biblioteca de places
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAP_API,
+    libraries: ['places'],
   });
 
   const [geocoder, setGeocoder] = useState(null);
@@ -140,7 +195,6 @@ export default function DonationPage() {
     }
   }, [isLoaded]);
 
-  // Función para manejar cambios en el campo de búsqueda y mostrar sugerencias
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearch(value);
@@ -153,9 +207,9 @@ export default function DonationPage() {
     autocompleteService.getPlacePredictions(
       {
         input: value,
-        componentRestrictions: { country: 'SA' }, // Restringir a Arabia Saudita
-        types: ['establishment', 'geocode'], // Tipos de lugares a buscar
-        language: 'ar' // Idioma árabe para resultados
+        componentRestrictions: { country: 'SA' }, 
+        types: ['establishment', 'geocode'], 
+        language: 'ar' 
       },
       (predictions, status) => {
         if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
@@ -167,7 +221,6 @@ export default function DonationPage() {
     );
   };
 
-  // Manejar selección de una predicción
   const handleSelectPrediction = (prediction) => {
     setSearch(prediction.description);
     setPredictions([]);
@@ -180,7 +233,6 @@ export default function DonationPage() {
         },
         (place, status) => {
           if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-            // Actualizar el mapa
             const location = place.geometry.location;
             const lat = location.lat();
             const lng = location.lng();
@@ -188,7 +240,6 @@ export default function DonationPage() {
             setMapCenter({ lat, lng });
             setMarkerPosition({ lat, lng });
             
-            // Extraer información de dirección
             const addressComponents = place.address_components;
             
             let city = "";
@@ -218,7 +269,6 @@ export default function DonationPage() {
             const finalDistrict = neighborhood || district || "";
             const finalStreet = street || "";
             
-            // Actualizar información de ubicación
             setmapData(prev => ({
               ...prev,
               city: city || "غير معروف",
@@ -228,8 +278,7 @@ export default function DonationPage() {
               longitude: lng,
             }));
             
-            // Sugerir el nombre del lugar para mosque
-            setFormData(prev => ({
+            setlocationForm(prev => ({
               ...prev,
               mosque: place.name || prediction.structured_formatting?.main_text || prediction.description.split(',')[0]
             }));
@@ -298,7 +347,6 @@ export default function DonationPage() {
     }
   };
 
-  // Modificación de findMosqueOnMap para usar el primer resultado de autocompletado
   const findMosqueOnMap = () => {
     if (!search) return;
     
@@ -364,9 +412,8 @@ export default function DonationPage() {
             street: finalStreet || "غير معروف",
           }));
           
-          // Sugerir nombre para mosque
           const placeName = search;
-          setFormData(prev => ({
+          setlocationForm(prev => ({
             ...prev,
             mosque: placeName
           }));
@@ -432,108 +479,113 @@ export default function DonationPage() {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
           <form onSubmit={handleNextStep} className="space-y-6">
             {step === 1 && (
-              /* Código del paso 1... */
               <div className="p-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-8 text-right">بيانات الطلب</h2>
-
-                {/* Step 1: Donation Details */}
                 <div className="space-y-6">
-                  {/* ... resto del código del paso 1 ... */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">الشركة</label>
-                    <div className="relative">
-                      <select
-                        name="company"
-                        value={formData.company}
-                        onChange={handleInputChange}
-                        className="w-full p-3 rounded-lg border-2 border-gray-200 bg-white text-right text-gray-800 text-base appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        required
-                      >
-                        <option value="">اختر الشركة</option>
-                        {waterCompanies.map((company) => (
-                          <option key={company} value={company}>
-                            {company}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2 text-right">الشركة</label>
+        <div className="relative">
+          <select
+            name="company"
+            value={formData.company}
+            onChange={handleInputChange}
+            className="w-full p-3 rounded-lg border-2 border-gray-200 bg-white text-right text-gray-800 text-base appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            required
+            disabled={loading}
+          >
+            <option value="">اختر الشركة</option>
+            {uniqueCompanies.map((company) => (
+              <option key={company} value={company}>
+                {company}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </div>
+        </div>
+      </div>
 
-                  {/* Código del tamaño... */}
-                  <div className="text-right">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">الحجم</label>
-                    <div className="grid grid-cols-3 gap-4">
-                      {sizes.map((size) => (
-                        <label key={size} className={`flex items-center space-x-3 border-2 rounded-lg p-4 cursor-pointer transition-all ${selectedSize === size ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-                          <input
-                            type="radio"
-                            name="size"
-                            value={size}
-                            checked={selectedSize === size}
-                            onChange={() => setSelectedSize(size)}
-                            className="sr-only"
-                          />
-                          <div className="flex flex-col items-start space-y-1 w-full">
-                            <span className={`font-medium ${selectedSize === size ? 'text-blue-600' : 'text-gray-800'}`}>
-                              {size === '200 مل' && 'صغير'}
-                              {size === '330 مل' && 'متوسط'}
-                              {size === '600~550 مل' && 'كبير'}
-                            </span>
-                            <span className="text-sm text-gray-500">
-                              {size}
-                            </span>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Código de la cantidad... */}
-                  <div className="text-right">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الكمية (كرتون)
-                    </label>
-                    <div className="flex items-center justify-end border-2 border-gray-200 rounded-lg overflow-hidden w-1/2 mr-auto">
-                      <button
-                        type="button"
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="px-4 py-3 bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700 text-lg font-medium"
-                      >
-                        -
-                      </button>
-                      <span className="flex-1 text-center text-gray-800 font-medium py-3">{quantity}</span>
-                      <button
-                        disabled={quantity >= maxQuantity}
-                        type="button"
-                        onClick={() => setQuantity(quantity + 1)}
-                        className="px-4 py-3 bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700 text-lg font-medium disabled:opacity-50"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Resumen del precio */}
-                  <div className="bg-gray-50 p-6 rounded-lg mt-8">
-                    <div className="flex justify-between items-center">
-                    <span className="text-gray-600 font-medium">الإجمالي</span>
-
-                      <div className="flex items-center gap-1 text-2xl font-bold text-gray-800">
-                        {totalPrice}
-                        <img
-                          className="h-5 w-auto inline-block"
-                          src='images/Saudi_Riyal_Symbol.svg'
-                          alt="ريال سعودي"
-                        />
-                      </div>
-                    </div>
-                  </div>
+      <div className="text-right">
+        <label className="block text-sm font-medium text-gray-700 mb-2">الحجم</label>
+        <div className="grid grid-cols-3 gap-4">
+          {availableSizes.map((size) => {
+ 
+            
+            return (
+              <label 
+                key={size} 
+                className={`flex items-center space-x-3 border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                  selectedSize === size ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="size"
+                  value={size}
+                  checked={selectedSize === size}
+                  onChange={() => handleSizeChange(size)}
+                  className="sr-only"
+                  disabled={!formData.company}
+                />
+                <div className="flex flex-col items-start space-y-1 w-full">
+               
+                  <span className="text-sm text-gray-500">
+                    {size}
+                  </span>
                 </div>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="text-right">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          الكمية (كرتون)
+        </label>
+        <div className="flex items-center justify-end border-2 border-gray-200 rounded-lg overflow-hidden w-1/2 mr-auto">
+          <button
+            type="button"
+            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+            className="px-4 py-3 bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700 text-lg font-medium"
+            disabled={!selectedSize}
+          >
+            -
+          </button>
+          <span className="flex-1 text-center text-gray-800 font-medium py-3">{quantity}</span>
+          <button
+            disabled={quantity >= maxQuantity || !selectedSize}
+            type="button"
+            onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
+            className="px-4 py-3 bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700 text-lg font-medium disabled:opacity-50"
+          >
+            +
+          </button>
+        </div>
+        {selectedSize && (
+          <p className="text-sm text-gray-500 mt-1">الكمية المتاحة: {maxQuantity} كرتون</p>
+        )}
+      </div>
+
+      <div className="bg-gray-50 p-6 rounded-lg mt-8">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-600 font-medium">الإجمالي</span>
+          <div className="flex items-center gap-1 text-2xl font-bold text-gray-800">
+            {totalPrice}
+            <img
+              className="h-5 w-auto inline-block"
+              src='images/Saudi_Riyal_Symbol.svg'
+              alt="ريال سعودي"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+              
               </div>
             )}
 
@@ -617,7 +669,6 @@ export default function DonationPage() {
                   </div>
                 </div>
 
-                {/* Campo para ingresar manualmente el nombre del lugar */}
                 <div className="p-4 bg-white border-t border-gray-200">
                   <div className="max-w-xl mx-auto">
                     <label htmlFor="mosque" className="block text-sm font-medium text-gray-700 mb-2 text-right">
@@ -627,8 +678,8 @@ export default function DonationPage() {
                       type="text"
                       id="mosque"
                       name="mosque"
-                      value={formData.mosque || ''}
-                      onChange={handleInputChange}
+                      value={locationForm.mosque || ''}
+                      onChange={(e) => setlocationForm({...locationForm, mosque: e.target.value})}
                       className="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                       placeholder="أدخل اسم المسجد أو المكان"
                       dir="rtl"
@@ -679,7 +730,7 @@ export default function DonationPage() {
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-8 shadow-sm hover:shadow-md transition-all duration-300">
                 <div className="p-6 bg-gray-50 border-r-4 border-blue-500">
                   <div className="flex flex-row-reverse justify-between items-center">
-                    <div className="text-blue-600 text-lg font-medium">{formData.mosque}</div>
+                    <div className="text-blue-600 text-lg font-medium">{locationForm.mosque}</div>
                     <div className="text-gray-700 font-medium">المسجد</div>
                   </div>
                 </div>
@@ -718,7 +769,6 @@ export default function DonationPage() {
                 </div>
               </div>
               
-              {/* Detalles de pago */}
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-8 shadow-sm hover:shadow-md transition-all duration-300">
                 <div className="p-6">
                   <h3 className="font-bold text-xl text-gray-800 mb-6 text-right">تفاصيل الدفع</h3>
@@ -728,7 +778,7 @@ export default function DonationPage() {
                       <div className="flex items-center gap-1 text-gray-800 font-medium">
                         {totalPrice}
                         <img className="h-4 w-auto inline-block" src='images/Saudi_Riyal_Symbol.svg' alt="ريال" />
-                        <span className="text-gray-500 text-sm mr-1">({priceMap[selectedSize]} × {quantity})</span>
+                        <span className="text-gray-500 text-sm mr-1">({selectedSize} × {quantity})</span>
                       </div>
                       <span className="text-gray-700">سعر المنتج</span>
                     </div>

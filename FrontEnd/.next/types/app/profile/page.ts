@@ -1,4 +1,4 @@
-// File: /Users/meshari/Documents/GitHub/Suqia/FrontEnd/app/profile/page.js
+// File: /Users/meshari/Documents/GitHub/suqia_481/FrontEnd/app/profile/page.js
 import * as entry from '../../../../app/profile/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

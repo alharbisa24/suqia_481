@@ -5,37 +5,95 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-import { Home, ShoppingCart, List, LogOut, Menu, Activity, Users, Truck, CreditCard, TrendingUp, BarChart2, X,GitPullRequestArrow,Building } from "lucide-react";
-export default function CompaniesPage() {
-  const [orders, setOrders] = useState([
-    { id: 1, company: "شركة مياه الرياض", type: "200مل", quantity: 10 },
-    { id: 2, company: "شركة مياه جدة", type: "330مل", quantity: 20 },
-    { id: 3, company: "شركة مياه مكة", type: "600~550 مل", quantity: 15 },
-  ]);
-
-  const [editingOrderId, setEditingOrderId] = useState(null);
-  const [editedOrder, setEditedOrder] = useState({});
+import { Home, ShoppingCart, List, LogOut, Menu, Activity, Users, Truck, CreditCard, TrendingUp, BarChart2, X, GitPullRequestArrow, Building, Plus } from "lucide-react";
+export default function CompainesPage() {
+  const [products, setProducts] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newProduct, setNewProduct] = useState({ company: '', size: '200مل', quantity: 0 });
+  const router = useRouter();
+  const [editingQuantityId, setEditingQuantityId] = useState(null);
+  const [editedQuantity, setEditedQuantity] = useState(0);
 
-  const handleEditClick = (order) => {
-    setEditingOrderId(order.id);
-    setEditedOrder({ ...order });
+  const fetchProducts = async () => {
+    try {
+      const apiUrl = `${process.env.API_URL}/products`;   
+
+      const res = await axios.get(apiUrl);
+      setProducts(res.data);
+    } catch (err) {
+      console.error(err);
+      notyf.error("فشل في جلب المنتجات");
+    }
   };
 
-  const handleCancel = () => {
-    setEditingOrderId(null);
-    setEditedOrder({});
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const [notyf, setNotyf] = useState(null);
+
+  useEffect(() => {
+    const instance = new Notyf({
+      duration: 3000,
+      position: { x: 'left', y: 'top' }
+    });
+    setNotyf(instance);
+  }, []);
+
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    try {
+      const apiUrl = `${process.env.API_URL}/products`;   
+
+      const res = await axios.post(apiUrl, newProduct);
+      setIsModalOpen(false);
+      fetchProducts();
+      notyf.success('تم إضافة المنتج بنجاح');
+    } catch (err) {
+      console.error(err);
+      notyf.error('فشل في إضافة المنتج');
+    }
   };
 
-  const handleSave = () => {
-    setOrders(orders.map(o => o.id === editingOrderId ? editedOrder : o));
-    setEditingOrderId(null);
-    setEditedOrder({});
+  
+  const handleDeleteProduct = async (id) => {
+    if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
+      try {
+        console.error("Deleting product id:", id);
+
+        const apiUrl = `${process.env.API_URL}/products/${id}`;   
+
+        await axios.delete(apiUrl);
+
+        fetchProducts();
+        notyf.success('تم حذف المنتج بنجاح');
+      } catch (err) {
+        console.error(err);
+        notyf.error('فشل في حذف المنتج');
+      }
+    }
   };
 
+  const handleUpdateQuantity = async (id) => {
+    try {
+      const apiUrl = `${process.env.API_URL}/products/${id}/quantity`;   
+
+      await axios.put(apiUrl, {
+        quantity: editedQuantity
+      });
+      notyf.success('تم تحديث الكمية بنجاح');
+      setEditingQuantityId(null);
+      fetchProducts();
+    } catch (err) {
+      console.error(err);
+      notyf.error('فشل في تحديث الكمية');
+    }
+  };
+  
+  
   return (
-   <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Overlay for mobile */}
+    <div className="flex flex-col min-h-screen bg-gray-50">
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
@@ -93,7 +151,7 @@ export default function CompaniesPage() {
               <GitPullRequestArrow className="w-5 h-5" /> <span>طلبات السائقين</span>
             </Link>
             <Link href="/admin/companies" className="flex items-center space-x-3 space-x-reverse p-3 rounded-lg bg-blue-50 text-blue-600 font-medium">
-              <Building className="w-5 h-5" /> <span>الشركات</span>
+              <Building className="w-5 h-5" /> <span>المنتجات</span>
             </Link>
           </div>
           
@@ -102,7 +160,6 @@ export default function CompaniesPage() {
             onClick={() => {
               localStorage.removeItem('token');
               localStorage.removeItem('user');
-              setUser(null);
               router.push('/login');
             }}
             className="flex items-center space-x-3 space-x-reverse p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors w-full"
@@ -112,71 +169,176 @@ export default function CompaniesPage() {
         </nav>
       </div>
 
+      {/* Mobile Header */}
+      <div className="md:hidden bg-white shadow-sm p-4 flex justify-between items-center">
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="p-1 rounded-full hover:bg-gray-100"
+        >
+          <Menu size={24} />
+        </button>
+        <h1 className="text-xl font-bold">المنتجات</h1>
+      </div>
+
       {/* Page Content */}
       <div className={`flex-grow p-6 text-black relative z-10 md:pr-80`}>
-        <h1 className="text-2xl font-bold text-right mb-8">قائمة الشركات</h1>
+        <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">منتجات</h1>
 
-        <div className="relative flex flex-col my-12 bg-white rounded-3xl p-6 overflow-x-auto">
-          <table className="min-w-full text-right text-sm md:text-base">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="px-4 py-2">اسم الشركة</th>
-                <th className="px-4 py-2">النوع</th>
-                <th className="px-4 py-2">الكمية</th>
-                <th className="px-4 py-2">إجراء</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map(order => (
-                <tr key={order.id} className="border-t">
-                  <td className="px-4 py-3">
-                    {editingOrderId === order.id ? (
-                      <input
-                        className="border px-2 py-1 rounded w-full"
-                        value={editedOrder.company}
-                        onChange={e => setEditedOrder({ ...editedOrder, company: e.target.value })}
-                      />
-                    ) : order.company}
-                  </td>
-                  <td className="px-4 py-3">
-                    {editingOrderId === order.id ? (
-                      <select
-                        className="border px-2 py-1 rounded w-full"
-                        value={editedOrder.type}
-                        onChange={e => setEditedOrder({ ...editedOrder, type: e.target.value })}
-                      >
-                        <option value="200مل">200مل</option>
-                        <option value="330مل">330مل</option>
-                        <option value="600~550 مل">600~550 مل</option>
-                      </select>
-                    ) : order.type}
-                  </td>
-                  <td className="px-4 py-3">
-                    {editingOrderId === order.id ? (
-                      <input
-                        type="number"
-                        className="border px-2 py-1 rounded w-full"
-                        value={editedOrder.quantity}
-                        onChange={e => setEditedOrder({ ...editedOrder, quantity: e.target.value })}
-                      />
-                    ) : order.quantity}
-                  </td>
-                  <td className="px-4 py-3">
-                    {editingOrderId === order.id ? (
-                      <div className="flex space-x-2 justify-end">
-                        <button onClick={handleSave} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">حفظ</button>
-                        <button onClick={handleCancel} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">إلغاء</button>
-                      </div>
-                    ) : (
-                      <button onClick={() => handleEditClick(order)} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">تعديل</button>
-                    )}
-                  </td>
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
+          >
+            <Plus size={18} />
+            <span>إضافة منتج جديد</span>
+          </button>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-right">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="px-6 py-4 text-sm font-medium text-gray-500">اسم الشركة</th>
+                  <th className="px-6 py-4 text-sm font-medium text-gray-500">الحجم</th>
+                  <th className="px-6 py-4 text-sm font-medium text-gray-500">الكمية</th>
+                  <th className="px-6 py-4 text-sm font-medium text-gray-500">المتبقي</th>
+                  <th className="px-6 py-4 text-sm font-medium text-gray-500">إجراء</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {products.map(product => (
+                  <tr key={product.company} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-medium">{product.company}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-gray-700">{product.size}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-gray-700">{product.quantity}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-gray-700">{product.remaining_quantity}</div>
+                    </td>
+                    <td className="px-6 py-4">
+  {editingQuantityId === product._id ? (
+    <div className="flex gap-2 items-center">
+      <input
+        type="number"
+        className="border border-gray-300 px-2 py-1 rounded-md w-20 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        value={editedQuantity}
+        onChange={e => setEditedQuantity(parseInt(e.target.value) || 0)}
+      />
+      <button
+        onClick={() => handleUpdateQuantity(product._id)}
+        className="bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded-md text-sm"
+      >
+        حفظ
+      </button>
+      <button
+        onClick={() => setEditingQuantityId(null)}
+        className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded-md text-sm"
+      >
+        إلغاء
+      </button>
+    </div>
+  ) : (
+    <button
+      onClick={() => {
+        setEditingQuantityId(product._id);
+        setEditedQuantity(product.quantity);
+      }}
+      className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+    >
+      تعديل الكمية
+    </button>
+  )}
+
+                      <button 
+                        onClick={() => handleDeleteProduct(product._id)}
+                        className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+                      >
+                        حذف
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+
+      {isModalOpen && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-50"
+            onClick={() => setIsModalOpen(false)}
+          />
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-6 z-50 w-full max-w-md">
+            <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold text-gray-900">إضافة منتج جديد</h3>
+
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddProduct} className="space-y-6">
+              <div className="space-y-2">
+                <label className="block text-gray-700 font-medium">اسم الشركة</label>
+                <input
+                  type="text"
+                  className="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                  placeholder="أدخل اسم الشركة"
+                  value={newProduct.company}
+                  onChange={e => setNewProduct({...newProduct, company: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="block text-gray-700 font-medium">الحجم</label>
+                <select
+                  className="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                  value={newProduct.type}
+                  onChange={e => setNewProduct({...newProduct, type: e.target.value})}
+                  required
+                >
+                  <option value="200مل">200مل</option>
+                  <option value="330مل">330مل</option>
+                  <option value="600~550 مل">600~550 مل</option>
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="block text-gray-700 font-medium">الكمية</label>
+                <input
+                  type="number"
+                  className="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                  placeholder="أدخل الكمية"
+                  value={newProduct.quantity}
+                  onChange={e => setNewProduct({...newProduct, quantity: parseInt(e.target.value) || 0})}
+                  min="0"
+                  required
+                />
+              </div>
+              
+              <button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors"
+              >
+                إضافة المنتج
+              </button>
+            </form>
+          </div>
+        </>
+      )}
+
     </div>
   );
 }
