@@ -26,9 +26,8 @@ export default function TeamPage() {
   const teamMembers = [
     { name: "مشاري الحربي", role: "Backend Developer", linkedin: "#" },
     { name: "عمر الجوير", role: "Backend Developer", linkedin: "#" },
-    { name: "احمد الحريصي", role: "Backend Developer", linkedin: "#" },
-    { name: "خالد علوي", role: "Frontend Developer", linkedin: "#", },
-    { name: "أحمد العواد", role: "Frontend Developer", linkedin: "#"},
+    { name: "انس الدريهم", role: "Frontend Developer", linkedin: "#", },
+    { name: "سعود السماري", role: "Frontend Developer", linkedin: "#"},
     { name: "محمد الفاتش", role: "Frontend Developer", linkedin: "#"},
   ];
 

@@ -74,14 +74,15 @@ app.post('/pay', async (req, res) => {
       selectedSize,
       quantity,
       totalPrice,
-      completed:false,
-      image:null,
+      completed: false,
+      image: null,
       latitude,
       longitude,
       status: "waiting",
-      user_id :userID._id,
-      distributer_id:null,
-  });
+      user_id: userID._id,
+      distributer_id: null,
+      product_id: "68da678e4200c8b6b4784e35"
+    });
   
   await newOrder.save();
 

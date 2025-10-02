@@ -68,25 +68,11 @@ function Layout({ children }) {
       }
     }
     
-    // كلمات مفتاحية للأسعار
-    const pricingKeywords = ["الاسعار", "كم سعر", "أسعار", "تكلفة", "كم التكلفة", "سعر المياه", "اسعار المياه", "اسعار المنتجات", 'كم الاسعار'];
-    for (const keyword of pricingKeywords) {
-      if (q.includes(keyword)) {
-        const text = `أسعار منتجات المياه:\n
 
-        ١) عبوة 200 مل: ١٥ ريال للكرتون\n
-        ٢) عبوة 330 مل: ٢٥ ريال للكرتون\n
-        ٣) عبوة 600 مل: ٣٠ ريال للكرتون\n
-
-        
-        * الأسعار تشمل توصيل المياه للمسجد المحدد`;
-        return text;
-      }
-    }
 
     const predefinedAnswers = {
       "كيف اسجل": "للتسجيل: 1) اضغط 'تسجيل دخول' 2)  اضغط انشاء حساب 3) املأ البيانات 4) اضغط إنشاء حساب ، الان تم انشاء حسابك بنجاح !",
-      "تواصل معنا": "للتواصل: البريد: info@suqia.com - الجوال: 0501234567"
+      "تواصل معنا": "للتواصل: البريد: info@suqia.com "
     };
 
     for (const [key, value] of Object.entries(predefinedAnswers)) {
@@ -118,7 +104,9 @@ function Layout({ children }) {
       }
 
       const prompt = `أنت مساعد موقع سقيا (Suqia). أجب باختصار (بحد أقصى 3 جمل) وبشكل واضح.
-
+     
+      جاوب بنفس اللغه المرسلة لك سواء بالعربيه او الانجليزيه
+      answer with same language that user entered
       معلومات عن الموقع:
       - اسم الموقع: سقيا (Suqia)
       - عنوان الموقع: https://suqia.vercel.app
@@ -131,10 +119,6 @@ function Layout({ children }) {
       - آلية التحقق: يقوم السائق بتصوير كراتين الماء داخل المسجد وإرسال الصورة كإثبات للمتبرع.
       - طرق الدفع: الدفع الإلكتروني عبر بوابة PayTabs.
       - طبيعة المشروع: مشروع فردي.
-      - الأسعار:
-        * كرتون ٢٠٠ مل: ١٥ ريال سعودي
-        * كرتون ٣٣٠ مل: ٢٥ ريال سعودي
-        * كرتون ٦٠٠ مل: ٣٠ ريال سعودي
       - خطوات التسجيل كسائق:
         * زر تسجيل دخول.
         * زر إانشاء حساب.
@@ -163,8 +147,8 @@ function Layout({ children }) {
               parts: [{ text: prompt }]
             }],
             generationConfig: {
-              maxOutputTokens: 200, // تحديد طول الإجابة
-              temperature: 0.5 // تقليل العشوائية
+              maxOutputTokens: 200, 
+              temperature: 0.5 
             }
           })
         }
@@ -175,8 +159,8 @@ function Layout({ children }) {
 
       if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
         aiResponse = data.candidates[0].content.parts[0].text
-          .split('\n')[0] // أخذ أول سطر فقط
-          .substring(0, 200); // تقليل الطول
+          .split('\n')[0]
+          .substring(0, 200); 
       }
 
       setMessages(prev => [...prev, {

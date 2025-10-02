@@ -67,17 +67,7 @@ export default function HomePage() {
           </section>
           </div>
         
-      {/* Header Image - Full width as requested */}
-      <div className="w-full relative h-[50vh] md:h-[60vh] lg:h-[70vh] overflow-hidden">
-        <img
-          src="images/header.png"
-          alt="Suqia initiative"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-      </div>
-
-      {/* About & Goals Section - Modern card design */}
+     
       <section className="py-20 px-4" id="aboutus">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 relative">

@@ -12,9 +12,14 @@ export default function CompainesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newProduct, setNewProduct] = useState({ company: '', size: '200مل', quantity: 0 });
   const router = useRouter();
+  const [user, setUser] = useState(null);
   const [editingQuantityId, setEditingQuantityId] = useState(null);
   const [editedQuantity, setEditedQuantity] = useState(0);
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    setUser(storedUser ? JSON.parse(storedUser) : null);
 
+  }, []);
   const fetchProducts = async () => {
     try {
       const apiUrl = `${process.env.API_URL}/products`;   
@@ -124,7 +129,7 @@ export default function CompainesPage() {
             </div>
             <div>
               <p className="text-sm text-gray-500">مرحباً بك</p>
-              <p className="font-medium text-gray-400">{/*user?.fullname*/}</p>
+              <p className="font-medium text-gray-400">{user?.fullname}</p>
             </div>
           </div>
         </div>
