@@ -24,11 +24,11 @@ export default function TeamPage() {
   }, []);
 
   const teamMembers = [
-    { name: "مشاري الحربي", role: "Backend Developer", linkedin: "#" },
-    { name: "عمر الجوير", role: "Backend Developer", linkedin: "#" },
-    { name: "انس الدريهم", role: "Frontend Developer", linkedin: "#", },
-    { name: "سعود السماري", role: "Frontend Developer", linkedin: "#"},
-    { name: "محمد الفاتش", role: "Frontend Developer", linkedin: "#"},
+    { name: "مشاري الحربي", role: "Backend Developer", linkedin: "https://linkedin.com/in/meshari-alharbi-2ba045245" },
+    { name: "عمر الجوير", role: "Backend Developer", linkedin: "https://www.linkedin.com/in/omar-aljwear-ba586b385?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" },
+    { name: "انس الدريهم", role: "Frontend Developer", linkedin: "https://www.linkedin.com/in/anas-aldraihem-3ab48b2b8/ ", },
+    { name: "سعود السماري", role: "Frontend Developer", linkedin: "https://www.linkedin.com/in/saud-alsmari-81804331b/"},
+    { name: "محمد الفاتش", role: "Frontend Developer", linkedin: "https://www.linkedin.com/in/mohammed-alfatesh-682974363/"},
   ];
 
   return (
