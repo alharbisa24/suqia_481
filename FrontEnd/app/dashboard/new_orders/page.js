@@ -6,7 +6,9 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
-export default function DashboardNewOrdersPage() {
+import RoleGuard from '../../components/RoleGuard';
+
+function DistributerNewOrdersPage() {
 
 
 
@@ -666,5 +668,13 @@ const captureImage = () => {
       </div>
   
 
+  );
+}
+
+export default function DashboardNewOrdersPage() {
+  return (
+    <RoleGuard allowedRoles={['distributer']} redirectTo="/">
+      <DistributerNewOrdersPage />
+    </RoleGuard>
   );
 }

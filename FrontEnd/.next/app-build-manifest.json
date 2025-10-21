@@ -12,33 +12,15 @@
       "static/css/app/page.css",
       "static/chunks/app/page.js"
     ],
-    "/login/page": [
+    "/myDonations/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/login/page.js"
-    ],
-    "/reset_password/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/reset_password/page.css",
-      "static/chunks/app/reset_password/page.js"
+      "static/chunks/app/myDonations/page.js"
     ],
     "/admin/home/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/admin/home/page.js"
-    ],
-    "/admin/distributers/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/admin/distributers/page.css",
-      "static/chunks/app/admin/distributers/page.js"
-    ],
-    "/DistributersRequest/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/DistributersRequest/page.css",
-      "static/chunks/app/DistributersRequest/page.js"
     ],
     "/admin/new_orders/page": [
       "static/chunks/webpack.js",
@@ -46,27 +28,44 @@
       "static/css/app/admin/new_orders/page.css",
       "static/chunks/app/admin/new_orders/page.js"
     ],
+    "/admin/orders/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/admin/orders/page.css",
+      "static/chunks/app/admin/orders/page.js"
+    ],
+    "/admin/distributers/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/admin/distributers/page.css",
+      "static/chunks/app/admin/distributers/page.js"
+    ],
+    "/admin/customers/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/admin/customers/page.css",
+      "static/chunks/app/admin/customers/page.js"
+    ],
     "/admin/distributers_requests/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/admin/distributers_requests/page.css",
       "static/chunks/app/admin/distributers_requests/page.js"
     ],
+    "/login/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/login/page.js"
+    ],
     "/dashboard/home/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/home/page.js"
     ],
-    "/dashboard/new_orders/page": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/dashboard/new_orders/page.css",
-      "static/chunks/app/dashboard/new_orders/page.js"
-    ],
-    "/dashboard/orders/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/orders/page.js"
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }

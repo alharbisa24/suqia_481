@@ -5,8 +5,9 @@ import { Home, ShoppingCart, List, LogOut } from "lucide-react";
 import { useState, useEffect } from 'react';
 import axios from "axios";
 import { useRouter } from 'next/navigation';
+import RoleGuard from '../../components/RoleGuard';
 
-export default function DashboardOrdersPage() {
+function DistributerOrdersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [orders, setOrders] = useState([]);
   const [user, setUser] = useState(null);
@@ -145,5 +146,13 @@ export default function DashboardOrdersPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DashboardOrdersPage() {
+  return (
+    <RoleGuard allowedRoles={['distributer']} redirectTo="/">
+      <DistributerOrdersPage />
+    </RoleGuard>
   );
 }

@@ -7,10 +7,11 @@ import { useRouter } from "next/navigation";
 import { Line } from 'react-chartjs-2';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, LineElement, BarElement, PointElement, LinearScale, Title, CategoryScale, Tooltip, Legend } from 'chart.js';
+import RoleGuard from '../../components/RoleGuard';
 
 ChartJS.register(BarElement,LineElement, PointElement, LinearScale, Title, CategoryScale, Tooltip, Legend);
 
-export default function DashboardHomePage() {
+function DistributerDashboardHomePage() {
   const [price, setPrice] = useState(0); // Initialize with 0
   const [totalOrdersCompleted, setTotalOrdersCompleted] = useState(0); // Initialize with 0
   const [totalOrderswating, settotalOrderswating] = useState(0); // Initialize with 0
@@ -253,5 +254,13 @@ export default function DashboardHomePage() {
 </div>
 </div>
 
+  );
+}
+
+export default function DashboardHomePage() {
+  return (
+    <RoleGuard allowedRoles={['distributer']} redirectTo="/">
+      <DistributerDashboardHomePage />
+    </RoleGuard>
   );
 }

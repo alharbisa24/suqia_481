@@ -7,10 +7,11 @@ import { useRouter } from "next/navigation";
 import { Line } from 'react-chartjs-2';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, LineElement, BarElement, PointElement, LinearScale, Title, CategoryScale, Tooltip, Legend } from 'chart.js';
+import RoleGuard from '../../components/RoleGuard';
 
 ChartJS.register(BarElement, LineElement, PointElement, LinearScale, Title, CategoryScale, Tooltip, Legend);
 
-export default function DashboardHomePage() {
+function AdminDashboardHomePage() {
   const [price, setPrice] = useState(0); 
   const [user, setUser] = useState(null);
   const router = useRouter();
@@ -212,7 +213,8 @@ const fetchBarChartData = async () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <RoleGuard allowedRoles={['admin']} redirectTo="/">
+      <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Overlay for mobile */}
       {isSidebarOpen && (
         <div 
@@ -580,5 +582,14 @@ const fetchBarChartData = async () => {
         </main>
       </div>
     </div>
+    </RoleGuard>
+  );
+}
+
+export default function DashboardHomePage() {
+  return (
+    <RoleGuard allowedRoles={['admin']} redirectTo="/">
+      <AdminDashboardHomePage />
+    </RoleGuard>
   );
 }

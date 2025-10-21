@@ -7,8 +7,9 @@ import axios from 'axios';
 import { redirect } from 'next/dist/server/api-utils';
 import { useRouter } from "next/navigation";
 import Navbar from "../navbar";
+import RoleGuard from "../components/RoleGuard";
 
-export default function OrdersPage() {
+function UserDonationsPage() {
   const { user, setUser } = useUser();
   const router = useRouter();
 
@@ -251,3 +252,12 @@ const DetailItem = ({ label, value }) => (
     </p>
   </div>
 );
+
+
+export default function OrdersPage() {
+  return (
+    <RoleGuard allowedRoles={['user']} redirectTo="/">
+      <UserDonationsPage />
+    </RoleGuard>
+  );
+}

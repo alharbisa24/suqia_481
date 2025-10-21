@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 import { Home, ShoppingCart, List, LogOut, Menu, Activity, Users, Truck, CreditCard, TrendingUp, BarChart2, X ,GitPullRequestArrow ,Building} from "lucide-react";
+import RoleGuard from '../../components/RoleGuard';
 
-export default function AdminewOrdersPage() {
+function AdminNewOrdersPage() {
 
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [distributors, setDistributors] = useState([]);
@@ -530,5 +531,13 @@ export default function AdminewOrdersPage() {
 `}</style>
   </div>
   
+  );
+}
+
+export default function AdminewOrdersPage() {
+  return (
+    <RoleGuard allowedRoles={['admin']} redirectTo="/">
+      <AdminNewOrdersPage />
+    </RoleGuard>
   );
 }

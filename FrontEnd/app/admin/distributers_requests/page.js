@@ -9,8 +9,9 @@ import {
   Home, ShoppingCart, List, LogOut, Menu,
   Users, Truck, GitPullRequestArrow, X,Building
 } from "lucide-react";
+import RoleGuard from '../../components/RoleGuard';
 
-export default function DistributersRequestsPage() {
+function AdminDistributersRequestsPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [requests, setRequests] = useState([]);
@@ -205,5 +206,13 @@ export default function DistributersRequestsPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function DistributersRequestsPage() {
+  return (
+    <RoleGuard allowedRoles={['admin']} redirectTo="/">
+      <AdminDistributersRequestsPage />
+    </RoleGuard>
   );
 }
