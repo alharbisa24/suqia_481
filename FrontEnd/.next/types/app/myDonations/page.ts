@@ -1,4 +1,3 @@
-// File: /Users/Anas/Documents/GitHub/suqia_481/FrontEnd/app/myDonations/page.js
 import * as entry from '../../../../app/myDonations/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
