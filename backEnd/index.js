@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const jwt = require("jsonwebtoken");
@@ -96,8 +96,8 @@ app.post('/pay', async (req, res) => {
         cart_description: 'طلب من سقيا كميات ماء',
         cart_currency: 'SAR',
         cart_amount: totalPrice,
-        callback: 'https://suqia-pmbz.onrender.com/payment_complete',
-        return: 'https://suqia-pmbz.onrender.com/payment_success'
+        callback: 'https://suqia-481.onrender.com/payment_complete',
+        return: 'https://suqia-481.onrender.com/payment_success'
       },
       {
         headers: {
@@ -239,10 +239,10 @@ app.post('/payment_complete', async (req, res) => {
   
 });
 app.post('/payment_success', async (req, res) => {
-res.redirect('https://suqia.vercel.app/success');
+res.redirect('https://suqia-481.vercel.app/success');
 });
 app.get('/payment_success', async (req, res) => {
-  res.redirect('https://suqia.vercel.app/success');
+  res.redirect('https://suqia-481.vercel.app/success');
   });
 
 app.get('/orders', async (req, res) => {
@@ -599,8 +599,7 @@ app.post('/Requestreset_password', async (req, res) => {
       token
     }).save();
     
-    // Create reset URL
-    const resetUrl = `https://suqia.vercel.app/reset-password?token=${token}`;
+    const resetUrl = `https://suqia-481.vercel.app/reset-password?token=${token}`;
     
     // Send email using MailerSend
     await axios.post('https://api.mailersend.com/v1/email', {
