@@ -83,7 +83,6 @@ function Layout({ children }) {
 
     return null;
   };
-
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
@@ -102,6 +101,9 @@ function Layout({ children }) {
         setIsLoading(false); // Important: Stop loading here
         return;
       }
+
+      // **تأكد من أن المفتاح الخاص بك (AIzaSyDwuyMt71epvO3UY-1MKPyCvo1dI7ONzjE) صحيح وغير منتهي الصلاحية.**
+      const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCMR3d65yWqPlmH6c_sGqGeIi5DKnj9tEo`; 
 
       const prompt = `أنت مساعد موقع سقيا (Suqia). أجب باختصار (بحد أقصى 3 جمل) وبشكل واضح.
      
@@ -135,8 +137,9 @@ function Layout({ children }) {
       السؤال: ${userInput}
       الجواب:`;
 
+      
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDwuyMt71epvO3UY-1MKPyCvo1dI7ONzjE`,
+        GEMINI_API_URL,
         {
           method: 'POST',
           headers: {
@@ -154,13 +157,45 @@ function Layout({ children }) {
         }
       );
 
-      const data = await response.json();
-      let aiResponse = 'عذرًا، لم أتمكن من الإجابة. يرجى إعادة المحاولة.';
+      // **التحقق من حالة استجابة HTTP (HTTP Status Check)**
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API HTTP Error:', response.status, errorText);
+        let errorContent = `فشل في الاتصال بواجهة برمجة التطبيقات (HTTP ${response.status}). قد يكون بسبب مفتاح API غير صحيح أو مشكلة في الخادم.`;
+        
+        // محاولة استخلاص رسالة الخطأ من نص الاستجابة إذا كانت متوفرة
+        try {
+             const errorJson = JSON.parse(errorText);
+             if(errorJson.error && errorJson.error.message) {
+                 errorContent = `خطأ من API: ${errorJson.error.message}`;
+             }
+        } catch (e) {
+            // تجاهل أخطاء JSON parsing إذا لم يكن النص هو JSON
+        }
+        
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: errorContent
+        }]);
+        setIsLoading(false);
+        return; // توقف عند وجود خطأ HTTP
+      }
 
+      const data = await response.json();
+     
+      let aiResponse = 'عذرًا، لم أتمكن من الإجابة. يرجى إعادة المحاولة.';
+      
+      // **تبسيط منطق استخلاص الرد والتحقق من وجوده**
       if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-        aiResponse = data.candidates[0].content.parts[0].text
-          .split('\n')[0]
-          .substring(0, 200); 
+        aiResponse = data.candidates[0].content.parts[0].text.trim();
+        // لا حاجة لتقسيم السطر الأول ثم قصّه ما لم يكن لديك مشاكل في التنسيق غير المرغوب فيه.
+        // aiResponse = aiResponse.split('\n')[0].substring(0, 200); 
+      } else if (data.promptFeedback?.blockReason) {
+         // معالجة حالة حظر المحتوى (Safety Policy)
+         aiResponse = `عذرًا، تم حظر هذا السؤال لأسباب تتعلق بالسلامة. (Block Reason: ${data.promptFeedback.blockReason})`;
+      } else {
+        // إذا كان هناك خطأ آخر في الرد ولكنه لم يظهر كـ HTTP error.
+         console.error('Unexpected API Response Structure or Empty Response:', data);
       }
 
       setMessages(prev => [...prev, {
@@ -169,10 +204,10 @@ function Layout({ children }) {
       }]);
 
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Error during fetch or parsing:', err);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'حدث خطأ تقني. يرجى المحاولة لاحقًا.'
+        content: 'حدث خطأ تقني غير متوقع. يرجى المحاولة لاحقًا.'
       }]);
     } finally {
       setIsLoading(false);
