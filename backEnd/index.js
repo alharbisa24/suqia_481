@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const jwt = require("jsonwebtoken");
@@ -1033,9 +1033,9 @@ app.get('/products', async (req, res) => {
   }
 });
 app.post('/products', async (req, res) => {
-  const { company, size, quantity } = req.body;
+  const { company, size, quantity, price } = req.body;
   
-  if (!company || !size || !quantity) {
+  if (!company || !size || !quantity || !price) {
     return res.status(400).json({ message: 'جميع الحقول مطلوبة (الشركة، الحجم، الكمية)' });
   }
   
@@ -1043,9 +1043,10 @@ app.post('/products', async (req, res) => {
     const newProduct = new Products({
       company,
       size,
-      quantity
+      quantity,
+      price
     });
-    
+     
     await newProduct.save();
     
     res.status(201).json({

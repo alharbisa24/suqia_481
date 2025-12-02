@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}"
+self.__REACT_LOADABLE_MANIFEST='{"app/reset-password/page.js -> ./client-form":{"id":2643,"files":["static/chunks/651-a3b1d7b8c04cfaab.js","static/chunks/643.c09179dc097b254b.js"]}}';

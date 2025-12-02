@@ -12,7 +12,7 @@ function AdminCompaniesPage() {
   const [products, setProducts] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newProduct, setNewProduct] = useState({ company: '', size: '200مل', quantity: 0 });
+  const [newProduct, setNewProduct] = useState({ company: '', size: '200مل', quantity: 0, price: 20 });
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [editingQuantityId, setEditingQuantityId] = useState(null);
@@ -67,7 +67,6 @@ function AdminCompaniesPage() {
   const handleDeleteProduct = async (id) => {
     if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
       try {
-        console.error("Deleting product id:", id);
 
         const apiUrl = `${process.env.API_URL}/products/${id}`;   
 
@@ -210,6 +209,7 @@ function AdminCompaniesPage() {
                   <th className="px-6 py-4 text-sm font-medium text-gray-500">الحجم</th>
                   <th className="px-6 py-4 text-sm font-medium text-gray-500">الكمية</th>
                   <th className="px-6 py-4 text-sm font-medium text-gray-500">المتبقي</th>
+                  <th className="px-6 py-4 text-sm font-medium text-gray-500">السعر</th>
                   <th className="px-6 py-4 text-sm font-medium text-gray-500">إجراء</th>
                 </tr>
               </thead>
@@ -227,6 +227,9 @@ function AdminCompaniesPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-gray-700">{product.remaining_quantity}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-gray-700">{product.price}</div>
                     </td>
                     <td className="px-6 py-4">
   {editingQuantityId === product._id ? (
@@ -312,8 +315,8 @@ function AdminCompaniesPage() {
                 <label className="block text-gray-700 font-medium">الحجم</label>
                 <select
                   className="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                  value={newProduct.type}
-                  onChange={e => setNewProduct({...newProduct, type: e.target.value})}
+                  value={newProduct.size}
+                  onChange={e => setNewProduct({...newProduct, size: e.target.value})}
                   required
                 >
                   <option value="200مل">200مل</option>
@@ -330,6 +333,19 @@ function AdminCompaniesPage() {
                   placeholder="أدخل الكمية"
                   value={newProduct.quantity}
                   onChange={e => setNewProduct({...newProduct, quantity: parseInt(e.target.value) || 0})}
+                  min="0"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-gray-700 font-medium">السعر</label>
+                <input
+                  type="number"
+                  className="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                  placeholder="أدخل السعر"
+                  value={newProduct.price}
+                  onChange={e => setNewProduct({...newProduct, price: parseInt(e.target.value) || 20})}
                   min="0"
                   required
                 />
